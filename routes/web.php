@@ -1,7 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\WalletController;
+use App\Http\Controllers\ClientsController;
+use App\Http\Controllers\CompaniesController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -16,3 +19,14 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/charge_wallet', [WalletController::class, 'charge'])->name('charge');
+Route::post('/charge_wallet', [WalletController::class, 'update'])->name('charge_wallet');
+Route::post('/login', [AuthController::class, 'login'])->name('login');
+
+// get route request
+Route::get('/clients/payments', [ClientsController::class, 'payments']);
+Route::get('/clients/wallet', [ClientsController::class, 'wallet']);
+
+Route::get('/companies/payments', [CompaniesController::class, 'payments']);
+Route::get('/companies_service', [CompaniesController::class, 'findByService']);

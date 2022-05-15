@@ -18,6 +18,9 @@
             body {
                 font-family: 'Nunito', sans-serif;
             }
+            input{
+                border:2px solid #fff
+            }
         </style>
     </head>
     <body class="antialiased">
@@ -128,5 +131,56 @@
                 </div>
             </div>
         </div>
+
+        {{-- <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body p-4">
+                            <h4 class="card-title">Login User</h4>
+                            <form action="{{ route('login') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="typeOfUser" value="user">
+                                <div class="mb-3">
+                                    <label for="emailInput" class="form-label">Phone</label>
+                                    <input type="text" name="phone" class="form-control" id="emailInput" aria-describedby="emailHelp">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="passInput" class="form-label">Password</label>
+                                    <input type="password" name="password" class="form-control" id="passInput">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Submit</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> --}}
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script>
+            $('#form').click(function(){
+                let password = $('#password').val();
+                password = password+Math.random();
+                console.log(password);
+                $.ajax({
+                    url : "{{ route('test.store') }}",
+                    type: 'POST',  // http method
+                    data: { 
+                        _token : $('input[name="_token"]').val(),
+                        name : $('#name').val(),
+                        password : password,
+                     },  // data to submit
+                    success: function (data, status, xhr) {
+                        console.log('done');
+                        console.log(data);
+                    },
+                    error: function (jqXhr, textStatus, errorMessage) {
+                            $('p').append('Error' + errorMessage);
+                    }
+                });
+            })
+
+        </script>
     </body>
 </html>
