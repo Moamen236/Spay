@@ -1,5 +1,7 @@
 <?php
 
+use App\Mail\OTP;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\WalletController;
@@ -15,6 +17,18 @@ use App\Http\Controllers\CompaniesController;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+Route::get('/test', function () {
+
+    $client = [
+        'name' => 'Harsukh Makwana',
+        'otp' => '5986'
+    ];
+
+    Mail::to('moamen.ali107@gmail.com')->send(new OTP($client));
+
+    dd("success" ,$client);
+});
 
 Route::get('/', function () {
     return view('welcome');

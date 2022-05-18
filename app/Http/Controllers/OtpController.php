@@ -163,11 +163,21 @@ class OtpController extends Controller
                 'client_id' => $request->client_id,
                 'otp' => $random_otp
             ]);
+            // $client = [
+            //     'name' => $client_name,
+            //     'otp' => $random_otp,
+            // ];
+            // \Mail::to($client_email)->send(new OTP($client));
         } else {
             $otp->create([
                 'client_id' => $request->client_id,
                 'otp' => $random_otp
             ]);
+            // $client = [
+            //     'name' => $client_name,
+            //     'otp' => $random_otp,
+            // ];
+            // \Mail::to($client_email)->send(new OTP($client));
         }
     }
 

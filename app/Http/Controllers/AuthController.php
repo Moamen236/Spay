@@ -6,6 +6,7 @@ use App\Models\otp;
 use App\Models\client;
 use App\Models\Company;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
@@ -56,11 +57,12 @@ class AuthController extends Controller
                 
                 $client = $clients->create([
                     'name' => $request->name,
+                    'email' => $request->email,
                     'phone' => $request->phone,
                     'password' => $request->password,
                     'salt' => $request->salt,
                 ]);
-                $this->generateOtp($client['id']);
+                $this->generateOtp($client['id'], $client['name'], $client['email']);
                 return response()->json([
                     'status' => true,
                     'message' => 'client registered successfully',
@@ -204,6 +206,7 @@ class AuthController extends Controller
         if ($request->typeOfUser == 'user') {
             $validator =  Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
+                'email' => 'required|email',
                 'phone' => 'required|string|max:11',
                 'password' => 'required|string',
                 'salt' => 'required|string'
@@ -252,7 +255,7 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function generateOtp($client_id)
+    public function generateOtp($client_id , $client_name , $client_email)
     {
         $random_otp = rand(1000, 9999);
         // $otp_hash = hash('sha256', $random_otp);
@@ -265,11 +268,22 @@ class AuthController extends Controller
                 'client_id' => $client_id,
                 'otp' => $otp_hash
             ]);
+            $client = [
+                'name' => $client_name,
+                'otp' => $random_otp,
+            ];
+            \Mail::to($client_email)->send(new OTP($client));
         }else{
             $otp->create([
                 'client_id' => $client_id,
                 'otp' => $otp_hash
             ]);
+            
+            $client = [
+                'name' => $client_name,
+                'otp' => $random_otp,
+            ];
+            \Mail::to($client_email)->send(new OTP($client));
         }
     }
 
