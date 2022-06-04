@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\company;
+use App\Models\Company;
 use Illuminate\Support\Facades\Validator;
 
 class CompaniesController extends Controller
@@ -15,7 +15,7 @@ class CompaniesController extends Controller
      */
     public function index()
     {
-        $company = new company();
+        $company = new Company();
         $company = $company->getAll();
         return $company;
     }
@@ -29,7 +29,7 @@ class CompaniesController extends Controller
      */
     public function show($id)
     {
-        $company = new company();
+        $company = new Company();
         $company = $company->find($id);
         if ($company)
             return $company;
@@ -45,7 +45,7 @@ class CompaniesController extends Controller
      */
     public function payments(Request $request)
     {
-        $company = new company();
+        $company = new Company();
         $payments = $company->payments($request->company_id);
         return response()->json([
             'status' => true,

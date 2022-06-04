@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\client as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Google\Cloud\Firestore\Firestoreclient;
+use Google\Cloud\Firestore\FirestoreClient;
 use App\Models\recipts;
 use App\Models\Company;
 
@@ -22,7 +22,7 @@ class client extends Model
 
     public function __construct()
     {
-        $this->firstore = new Firestoreclient();
+        $this->firstore = new FirestoreClient();
         $this->collection = $this->firstore->collection('clients');
         $this->documents = $this->collection->documents()->rows();
     }
