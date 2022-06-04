@@ -62,7 +62,7 @@ class AuthController extends Controller
                     'password' => $request->password,
                     'salt' => $request->salt,
                 ]);
-                $this->generateOtp($client['id'], $client['name'], $client['email']);
+                $this->generateOtp($client['id'], $client['data']['name'], $client['data']['email']);
                 return response()->json([
                     'status' => true,
                     'message' => 'client registered successfully',
@@ -70,6 +70,7 @@ class AuthController extends Controller
                         'id' => $client['id'],
                         'name' => $client['data']['name'],
                         'phone' => $client['data']['phone'],
+                        'email' => $client['data']['email'],
                     ]
                 ]);
             }
