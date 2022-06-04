@@ -6,7 +6,7 @@ use App\Http\Controllers\ClientsController;
 use App\Http\Controllers\PaymentsController;
 use App\Http\Controllers\CompaniesController;
 use App\Http\Controllers\OtpController;
-use App\Http\Controllers\walletController;
+use App\Http\Controllers\WalletController;
 use App\Http\Controllers\RechargeController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\ReciptsController;
@@ -66,10 +66,10 @@ Route::get('/companies/{id}', [CompaniesController::class, 'show']);
 
 
 //WALLET
-Route::get('/wallets', [walletController::class, 'index']);
-Route::get('/wallets/{id}', [walletController::class, 'show']);
-Route::post('/wallets', [walletController::class, 'store']);
-Route::post('/clients/pay', [walletController::class, 'payWithWallet']);
+Route::get('/wallets', [WalletController::class, 'index']);
+Route::get('/wallets/{id}', [WalletController::class, 'show']);
+Route::post('/wallets', [WalletController::class, 'store']);
+Route::post('/clients/pay', [WalletController::class, 'payWithWallet']);
 
 
 //RECHARGE INFO
