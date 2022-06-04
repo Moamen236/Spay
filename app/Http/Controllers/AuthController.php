@@ -122,32 +122,17 @@ class AuthController extends Controller
         $clients = new client();
         $companies = new Company();
 
-        // $validator = $this->validateLoginData($request);
+        $validator = $this->validateLoginData($request);
 
-        // if ($validator->fails()) {
-        //     return response()->json([
-        //         'status' => 'error',
-        //         'message' => 'validation failed',
-        //         'data' => $validator->errors()
-        //     ]);
-        // } 
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'validation failed',
+                'data' => $validator->errors()
+            ]);
+        } 
 
         if($request->typeOfUser == 'user'){
-            $validator =  Validator::make($request->all(), [
-                'name' => 'required|string|max:255',
-                'email' => 'required|email',
-                'phone' => 'required|string|max:11',
-                'password' => 'required|string',
-                'salt' => 'required|string'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'validation failed',
-                    'data' => $validator->errors()
-                ]);
-            } 
             $client = $clients->findByPhone($request->phone);
             if ($client) {
                 $client_data = $client->data();
@@ -175,25 +160,7 @@ class AuthController extends Controller
                     'message' => 'Phone number is incorrect'
                 ]);
             }
-        }elseif($request->typeOfUser == 'company'){
-            $validator =  Validator::make($request->all(), [
-                'name' => 'required|string',
-                'service' => 'required|string',
-                'email' => 'required|email',
-                // 'password' => 'required|string',
-                'bank_account' => 'required|string',
-                'commercial' => 'required|string',
-                'tax_number' => 'required|string',
-                'personal_id' => 'required|string',
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'validation failed',
-                    'data' => $validator->errors()
-                ]);
-            } 
+        }elseif($request->typeOfUser == 'company'){ 
             $company = $companies->findByEmail($request->email);
             if ($company) {
                 $company_data = $company->data();
