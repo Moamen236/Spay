@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\otp;
+use App\Mail\OTPMail;
 use App\Models\client;
 use App\Models\Company;
 use Illuminate\Http\Request;
@@ -273,7 +274,7 @@ class AuthController extends Controller
                 'name' => $client_name,
                 'otp' => $random_otp,
             ];
-            \Mail::to($client_email)->send(new OTP($client));
+            \Mail::to($client_email)->send(new OTPMail($client));
         }else{
             $otp->create([
                 'client_id' => $client_id,
@@ -284,7 +285,7 @@ class AuthController extends Controller
                 'name' => $client_name,
                 'otp' => $random_otp,
             ];
-            \Mail::to($client_email)->send(new OTP($client));
+            \Mail::to($client_email)->send(new OTPMail($client));
         }
     }
 
