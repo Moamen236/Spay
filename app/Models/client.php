@@ -78,6 +78,21 @@ class client extends Model
         }
     }
 
+    /* get user by phone
+     * 
+     * @param  int $id
+     * @return array of user
+     */
+    public function findByEmail($email)
+    {
+        $collection = $this->collection->where('email', '=', $email);
+        $documents = $collection->documents();
+        if ($documents->rows() != null) {
+            $document = $documents->rows()[0];
+            return $document;
+        }
+    }
+
     /**
      * create client
      * 

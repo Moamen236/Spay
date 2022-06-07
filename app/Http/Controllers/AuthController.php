@@ -42,13 +42,13 @@ class AuthController extends Controller
             }else{
                 $password = $request->password;
                 $salt = $request->salt;
-                $password = str_replace($salt, '', $password);
+                $password_without_salt = str_replace($salt, '', $password);
 
                 ini_set('memory_limit', '2048M');
                 $file = file_get_contents(storage_path('app/hash.txt'));
                 $file = explode("\n", $file);
                 foreach ($file as $line) {
-                    if($line == $password){
+                    if($line == $password_without_salt){
                         return response()->json([
                             'status' => false,
                             'message' => 'Password is not secure'
@@ -320,7 +320,7 @@ class AuthController extends Controller
     public function checkUserAndSendOtp(Request $request)
     {
         $validator =  Validator::make($request->all(), [
-            'phone' => 'required|string|max:11',
+            'email' => 'required|email',
         ]);
 
         if ($validator->fails()) {
@@ -332,10 +332,10 @@ class AuthController extends Controller
         }
 
         $client = new client();
-        $find_client = $client->findByPhone($request->phone);
+        $find_client = $client->findByEmail($request->email);
 
         if($find_client){
-            $this->generateOtp($find_client->id());
+            $this->generateOtp($find_client->id() , $find_client->data()['name'] , $find_client->data()['email']);
             return response()->json([
                 'status' => true,
                 'message' => 'otp sent',
@@ -358,8 +358,9 @@ class AuthController extends Controller
     public function updatePassword(Request $request)
     {
         $validator =  Validator::make($request->all(), [
-            'phone' => 'required|string',
-            'password' => 'required|string|confirmed',
+            'email' => 'required|email',
+            'otp' => 'required|string',
+            'password' => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -371,16 +372,26 @@ class AuthController extends Controller
         }
 
         $client = new client();
-        $find_client = $client->findByPhone($request->phone);
+        $otp = new otp();
+        $find_client = $client->findByEmail($request->email);
 
         if($find_client){
+            $client_id = $find_client->id();
+            $find_otp = $otp->userOtp($client_id);
             $client_data = $find_client->data();
-            $client_data['password'] = $request->password;
-            $client->edit($find_client->id(), $client_data);
-            return response()->json([
-                'status' => true,
-                'message' => 'password updated',
-            ]);
+            if ($find_otp->data()['otp'] == (int) $request->otp) {
+                $client_data['password'] = $request->password;
+                $client->edit($find_client->id(), $client_data);
+                return response()->json([
+                    'status' => true,
+                    'message' => 'password updated',
+                ]);
+            }else{
+                return response()->json([
+                    'status' => false,
+                    'message' => 'otp not matched'
+                ]);
+            }
         }else{
             return response()->json([
                 'status' => false,

@@ -69,7 +69,7 @@ class OtpController extends Controller
     public function checkOtpFromResetpassword(Request $request)
     {
         $validator =  Validator::make($request->all(), [
-            'phone' => 'required|string|max:11',
+            'email' => 'required|email',
             'otp' => 'required|string',
         ]);
 
@@ -83,7 +83,7 @@ class OtpController extends Controller
 
         $client = new client();
         $otp = new otp();
-        $find_client = $client->findByPhone($request->phone);
+        $find_client = $client->findByEmail($request->email);
         if($find_client){
             $client_id = $find_client->id();
             $find_otp = $otp->userOtp($client_id);
