@@ -7,6 +7,9 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\ClientsController;
 use App\Http\Controllers\CompaniesController;
+
+use Spatie\Crypto\Rsa\PrivateKey;
+use Spatie\Crypto\Rsa\PublicKey;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -20,14 +23,57 @@ use App\Http\Controllers\CompaniesController;
 
 Route::get('/test', function () {
 
-    $client = [
-        'name' => 'Harsukh Makwana',
-        'otp' => '5986'
-    ];
+    // Generate a new private (and public) key pair
+    // $privkey = openssl_pkey_new(array(
+    //     "digest_alg" => 'md5',
+    //     "private_key_bits" => 2048,
+    //     "private_key_type" => OPENSSL_KEYTYPE_RSA,
+    // ));
+    // $key_details = openssl_pkey_get_details($privkey);
+    // print_r($key_details);
 
-    Mail::to('moamen.ali107@gmail.com')->send(new OTP($client));
+    // new keys
+    // $config = array(
+    //     "digest_alg" => "sha512",
+    //     "private_key_bits" => 2048,
+    //     "private_key_type" => OPENSSL_KEYTYPE_RSA,
+    // );
 
-    dd("success" ,$client);
+    // // Create the keypair  
+    // $res = openssl_pkey_new($config);
+    // // Get private key  
+    // openssl_pkey_export($res, $privkey);
+    // // Get public key  
+    // $pubkey = openssl_pkey_get_details($res);
+
+    // $pubkey = $pubkey["key"];
+
+    // echo "====PKCS1 RSA Key in Non Encrypted Format ====\n";
+    // var_dump($privkey);
+    // echo "\n";
+    // echo "====PKCS1 RSA Key in Encrypted Format====\n ";
+
+    // // Get private key in Encrypted Format  
+    // openssl_pkey_export($res, $privkey, "myverystrongpassword");
+    // // Get public key  
+    // $pubkey = openssl_pkey_get_details($res);
+    // $pubkey = $pubkey["key"];
+    // var_dump($privkey);
+    // echo "\n";
+    // echo "RSA Public Key \n ";
+    // var_dump($pubkey);
+    // dd($privkey , $pubkey);
+
+    $data = 'my secret data';
+
+    $privateKey = PrivateKey::fromFile(storage_path('app/privateKey.pem'));
+    $encryptedData = $privateKey->encrypt($data); // returns something unreadable
+
+    $publicKey = PublicKey::fromFile(storage_path('app/publicKey.pem'));
+    $decryptedData = $publicKey->decrypt($encryptedData); // returns 'my secret data'
+
+    dd($encryptedData, $decryptedData);
+
 });
 
 Route::get('/', function () {

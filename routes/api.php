@@ -69,7 +69,7 @@ Route::get('/companies/{id}', [CompaniesController::class, 'show']);
 Route::get('/wallets', [WalletController::class, 'index']);
 Route::get('/wallets/{id}', [WalletController::class, 'show']);
 Route::post('/wallets', [WalletController::class, 'store']);
-Route::post('/clients/pay', [WalletController::class, 'payWithWallet']);
+Route::post('/WalletPay', [WalletController::class, 'payWithWallet']);
 
 
 //RECHARGE INFO
