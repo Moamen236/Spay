@@ -41,6 +41,7 @@ class PaymentsController extends Controller
             'service_code' => 'required|string',
             'price' => 'required|string',
             'feeds' => 'required|numeric',
+            'pin' => 'nullable|string'
         ]);
 
         if($validator->fails()){
@@ -52,42 +53,67 @@ class PaymentsController extends Controller
         }
         else{
             $company = $this->getCompany($request->company_name);
-            $codes_to_company = $codes->findByCompanyId($company->id());
-            $company_codes = [];
-            foreach ($codes_to_company as $code) {
-                $company_codes[] = $code['data']['code'];
-            }
-            if(in_array($request->service_code, $company_codes)){
-                $payment = $payment->create([
-                    'company_id' => $company->id(),
-                    'client_id' => $request->client_id,
-                    'service_code' => $request->service_code,
-                    'price' => $request->price,
-                    'feeds' => $request->feeds,
-                ]);
-                $receipt = $this->createReceipt($payment, $request->feeds);
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Payment created successfully',
-                    'data' => [
-                        'id' => $payment->id(),
-                        'company_name' => $company->data()['name'],
-                        'client_id' => $payment->data()['client_id'],
-                        'service_code' => $payment->data()['service_code'],
-                        'price' => (float) $payment->data()['price'] ?? 0,
-                        'receipt' => [
-                            'id' => $receipt->id(),
-                            'payment_id' => $receipt->data()['payment_id'],
-                            'feeds' => (float) $receipt->data()['feeds'] ?? 0,
-                            'total' => (float) $receipt->data()['total'] ?? 0,
-                            'date' => $receipt->data()['date']->get()->format('Y-m-d H:i:s'),
-                        ]
-                    ]
-                ]);
+            if($company){
+                $codes_to_company = $codes->findByCompanyId($company->id());
+
+                $company_codes = [];
+                $company_pins = [];
+                foreach ($codes_to_company as $code) {
+                    $company_codes[] = $code['data']['code'];
+                    $company_pins[] = $code['data']['pin'] ?? '';
+                }
+
+                if(in_array($request->service_code, $company_codes)){
+                    if(in_array($request->pin, $company_pins)){
+                        return response()->json([
+                            'status' => true,
+                            'message' => 'payment successful',
+                            'company_codes' => $company_codes,
+                            'company_pins' => $company_pins
+                        ]);
+                        $payment = $payment->create([
+                            'company_id' => $company->id(),
+                            'client_id' => $request->client_id,
+                            'service_code' => $request->service_code,
+                            'price' => $request->price,
+                            'feeds' => $request->feeds,
+                        ]);
+                        $receipt = $this->createReceipt($payment, $request->feeds);
+                        return response()->json([
+                            'status' => true,
+                            'message' => 'Payment created successfully',
+                            'data' => [
+                                'id' => $payment->id(),
+                                'company_name' => $company->data()['name'],
+                                'client_id' => $payment->data()['client_id'],
+                                'service_code' => $payment->data()['service_code'],
+                                'price' => (float) $payment->data()['price'] ?? 0,
+                                'receipt' => [
+                                    'id' => $receipt->id(),
+                                    'payment_id' => $receipt->data()['payment_id'],
+                                    'feeds' => (float) $receipt->data()['feeds'] ?? 0,
+                                    'total' => (float) $receipt->data()['total'] ?? 0,
+                                    'date' => $receipt->data()['date']->get()->format('Y-m-d H:i:s'),
+                                ]
+                            ]
+                        ]);
+                    }
+                    else{
+                        return response()->json([
+                            'status' => false,
+                            'message' => 'Invalid pin',
+                        ]);
+                    }
+                }else{
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'service code not found',
+                    ]);
+                }
             }else{
                 return response()->json([
                     'status' => false,
-                    'message' => 'service code not found',
+                    'message' => 'company not found',
                 ]);
             }
         }
