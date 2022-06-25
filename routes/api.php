@@ -12,6 +12,7 @@ use App\Http\Controllers\TestController;
 use App\Http\Controllers\ReciptsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ServiceCodeController;
+use Spatie\Crypto\Exceptions\CouldNotDecryptData;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,7 +25,10 @@ use App\Http\Controllers\ServiceCodeController;
 |
 */
 
-Route::post('/test', [TestController::class, 'store'])->name('test.store');
+// Route::post('/test', [TestController::class, 'store'])->name('test.store');
+
+Route::get('/test', [TestController::class, 'index']);
+Route::post('/test/decrypt', [TestController::class, 'decrypt']);
 
 //CLIENTS
 Route::get('/clients', [ClientsController::class, 'index']);
@@ -40,7 +44,8 @@ Route::get('/clients/{id}/destroy', [ClientsController::class, 'destroyClient'])
 //PAYMENT
 Route::get('/payments', [PaymentsController::class, 'index']);
 Route::get('/payments/{id}', [PaymentsController::class, 'show']);
-Route::post('/payments', [PaymentsController::class, 'store']);
+Route::post('/payments_data', [PaymentsController::class, 'store']);
+Route::post('/payments', [PaymentsController::class, 'rsaPayments']);
 
 
 //OTP
@@ -50,6 +55,7 @@ Route::post('/otps', [OtpController::class, 'store']);
 Route::get('/otps/{id}/destroy', [OtpController::class, 'deleteOtpById']);
 Route::post('/checkOtp', [OtpController::class, 'check']);
 Route::post('/resend', [OtpController::class, 'resend']);
+Route::post('/send_otp', [OtpController::class, 'generateOtp']);
 Route::post('/check_reset_password_otp', [OtpController::class, 'checkOtpFromResetpassword']);
 
 

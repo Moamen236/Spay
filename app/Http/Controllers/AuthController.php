@@ -7,6 +7,7 @@ use App\Mail\OTPMail;
 use App\Models\client;
 use App\Models\Company;
 use Illuminate\Http\Request;
+use Spatie\Crypto\Rsa\PublicKey;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
@@ -18,10 +19,11 @@ class AuthController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function register(Request $request)
-    {
-        // $data = $request->all();
+    {   
         $clients = new client();
         $companies = new Company();
+
+        $key = $request->key;
 
         $validator = $this->validateRegisterData($request);
         if ($validator->fails()) {
@@ -361,6 +363,7 @@ class AuthController extends Controller
             'email' => 'required|email',
             'otp' => 'required|string',
             'password' => 'required|string',
+            'salt' => 'required|string'
         ]);
 
         if ($validator->fails()) {
@@ -381,6 +384,7 @@ class AuthController extends Controller
             $client_data = $find_client->data();
             if ($find_otp->data()['otp'] == (int) $request->otp) {
                 $client_data['password'] = $request->password;
+                $client_data['salt'] = $request->salt;
                 $client->edit($find_client->id(), $client_data);
                 return response()->json([
                     'status' => true,

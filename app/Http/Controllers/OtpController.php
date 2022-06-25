@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\otp;
+use App\Mail\OTPMail;
+use Illuminate\Support\Facades\Mail;
 use App\Models\client;
 use App\Models\wallet;
 use Illuminate\Http\Request;
@@ -156,6 +158,15 @@ class OtpController extends Controller
         // $otp_hash = hash('sha256', $random_otp);
 
         $otp = new otp();
+        $client = new client();
+        $get_client = $client->find($request->client_id);
+
+        $client_data = [
+            'name' => $get_client['data']['name'],
+            'otp' => $random_otp,
+        ];
+        $client_email = $get_client['data']['email'];
+
         $user_otp = $otp->userOtp($request->client_id);
         if ($user_otp) {
             $get_otp = $otp->findByOtp($user_otp);
@@ -163,21 +174,15 @@ class OtpController extends Controller
                 'client_id' => $request->client_id,
                 'otp' => $random_otp
             ]);
-            // $client = [
-            //     'name' => $client_name,
-            //     'otp' => $random_otp,
-            // ];
-            // \Mail::to($client_email)->send(new OTP($client));
+
+            \Mail::to($client_email)->send(new OTPMail($client_data));
         } else {
             $otp->create([
                 'client_id' => $request->client_id,
                 'otp' => $random_otp
             ]);
-            // $client = [
-            //     'name' => $client_name,
-            //     'otp' => $random_otp,
-            // ];
-            // \Mail::to($client_email)->send(new OTP($client));
+
+            \Mail::to($client_email)->send(new OTPMail($client_data));
         }
     }
 

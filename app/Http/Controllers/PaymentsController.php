@@ -6,8 +6,9 @@ use App\Models\Company;
 use App\Models\Payment;
 use App\Models\recipts;
 use App\Models\ServiceCode;
-use Google\Cloud\Core\Timestamp;
 use Illuminate\Http\Request;
+use Google\Cloud\Core\Timestamp;
+use Spatie\Crypto\Rsa\PrivateKey;
 use Illuminate\Support\Facades\Validator;
 
 class PaymentsController extends Controller
@@ -169,5 +170,102 @@ class PaymentsController extends Controller
         $company = new Company();
         $company = $company->findByName($name);
         return $company;
+    }
+
+
+    public function rsaPayments(Request $request)
+    {
+        $payment = new Payment;
+        $codes = new ServiceCode;
+
+        $validator = Validator::make($request->all(), [
+            'token' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'validation failed',
+                'data' => $validator->errors()
+            ]);
+        } else {
+
+            $key = base64_decode($request->token);
+            $privateKey = PrivateKey::fromFile(storage_path('privateKey.pem'), 'my-password');
+            $decryptedData = $privateKey->decrypt($key);
+            $decryptedData = json_decode($decryptedData, true);
+
+            if($decryptedData){
+                $company = $this->getCompany($decryptedData->company_name);
+                if ($company) {
+                    $codes_to_company = $codes->findByCompanyId($company->id());
+    
+                    $company_codes = [];
+                    $company_pins = [];
+                    foreach ($codes_to_company as $code) {
+                        $company_codes[] = $code['data']['code'];
+                        $company_pins[] = $code['data']['pin'] ?? '';
+                    }
+    
+                    if (in_array($decryptedData->service_code, $company_codes)) {
+                        if (in_array($decryptedData->pin, $company_pins)) {
+                            return response()->json([
+                                'status' => true,
+                                'message' => 'payment successful',
+                                'company_codes' => $company_codes,
+                                'company_pins' => $company_pins
+                            ]);
+                            $payment = $payment->create([
+                                'company_id' => $company->id(),
+                                'client_id' => $decryptedData->client_id,
+                                'service_code' => $decryptedData->service_code,
+                                'price' => $decryptedData->price,
+                                'feeds' => $decryptedData->feeds,
+                            ]);
+                            $receipt = $this->createReceipt($payment, $request->feeds);
+                            return response()->json([
+                                'status' => true,
+                                'message' => 'Payment created successfully',
+                                'data' => [
+                                    'id' => $payment->id(),
+                                    'company_name' => $company->data()['name'],
+                                    'client_id' => $payment->data()['client_id'],
+                                    'service_code' => $payment->data()['service_code'],
+                                    'price' => (float) $payment->data()['price'] ?? 0,
+                                    'receipt' => [
+                                        'id' => $receipt->id(),
+                                        'payment_id' => $receipt->data()['payment_id'],
+                                        'feeds' => (float) $receipt->data()['feeds'] ?? 0,
+                                        'total' => (float) $receipt->data()['total'] ?? 0,
+                                        'date' => $receipt->data()['date']->get()->format('Y-m-d H:i:s'),
+                                    ]
+                                ]
+                            ]);
+                        } else {
+                            return response()->json([
+                                'status' => false,
+                                'message' => 'Invalid pin',
+                            ]);
+                        }
+                    } else {
+                        return response()->json([
+                            'status' => false,
+                            'message' => 'service code not found',
+                        ]);
+                    }
+                } else {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'company not found',
+                    ]);
+                }
+            }else{
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Payment created successfully hambozo',
+                ]);
+            }
+
+        }
     }
 }
